@@ -1,0 +1,23 @@
+// package permettant les interactions avec la base de données
+const mysql = require('mysql2');
+
+const dbConfig = require('../config/dbConfig.js');
+
+var db = mysql.createConnection({
+    host: dbConfig.HOST,
+    user: dbConfig.USER,
+    password: dbConfig.PASSWORD,
+    database: dbConfig.DB
+});
+
+db.connect(function(err) {
+    if (err) {
+        console.error('error connecting: ' + err.stack);
+        return;
+    }
+    console.log('connected as id ' + db.threadId);
+});
+
+global.db = db;
+
+module.exports = db;
