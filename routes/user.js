@@ -1,12 +1,10 @@
-// routeur express definissant les routes à suivre pour les requêtes d'inscription et de connexion
+// routeur express definissant les routes à suivre pour les requêtes de modification
 // sur la table 'Users'
 
 const express = require('express');
 const router = express.Router();
+const userCtrl = require('../controllers/user');
 
-//const userCtrl = require('../controllers/user');
-
-//router.post('/signup', userCtrl.signup);
-//router.post('/login', userCtrl.login);
+// ajouter les routes
 
 module.exports = router;
