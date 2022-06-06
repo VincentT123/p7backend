@@ -4,16 +4,49 @@ const db = require('../db/db-groupomania');
 const fs = require('fs');
 
 
-// fonction utilisée pour la requête de type GET demandant les données de toutes les sauces
+// requête : liste des posts
 exports.getAllPosts = (req, res, next) => {
+    const request = 'SELECT * FROM posts ORDER BY date_cre DESC';
     db.query(
-    'SELECT * FROM posts ORDER BY date_pub DESC',
-    function (err, result) {
-        if (err) throw err;
-        res.json({
-            result,
-            status: 200,
-            message: "liste des posts transmise avec succès"
+        request,
+        function (err, results) {
+            if (err) throw err;
+            res.json({
+                results,
+                status: 200,
+                message: "liste des posts transmise avec succès"
+            })
         })
-    })
+};
+
+// requête : supprimer un post
+exports.createPost = (req, res, next) => {
+    const request = 'INSERT INTO posts (date_cre, texte, user_id, user_name) VALUES (?,?,?,?)';
+    const values = [req.body.date_cre, req.body.texte, req.body.user_id, req.body.user_name];
+    db.query(
+        request, values,
+        function (err, results) {
+            if (err) throw err;
+            res.json({
+                results,
+                status: 200,
+                message: "post créé avec succès"
+            })
+        })
+};
+
+// requête : créer un post
+exports.deletePost = (req, res, next) => {
+    const request = 'DELETE FROM posts WHERE id = ?';
+    const value = [req.body.id];
+    db.query(
+        request, value,
+        function (err, results) {
+            if (err) throw err;
+            res.json({
+                results,
+                status: 200,
+                message: "post supprimé avec succès"
+            })
+        })
 };

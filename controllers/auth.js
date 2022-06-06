@@ -32,7 +32,6 @@ exports.signup = async (req, res) => {
               message: "email déjà enregistré !"
             })
           } else {
-            console.log("result.insertId : ", result.insertId);
             res.json({
               result,
               status: 201,
@@ -53,7 +52,6 @@ exports.signup = async (req, res) => {
 
 // fonction utilisée pour la requête de connexion d'un utilisateur
 exports.login = (req, res) => {
-  console.log("req.body : ", req.body);
   const ruleMail = /^[a-z0-9._-]{2,30}[@][a-z0-9_-]{2,20}[.][a-z]{2,15}$/;
   const rulePass = /^[A-Za-z0-9-*+]{8,25}$/;
   if (ruleMail.test(req.body.email) && (rulePass.test(req.body.password))) {
@@ -67,8 +65,6 @@ exports.login = (req, res) => {
           message: "email inconnu !"
         })
       } else {
-        console.log("result id : ", results[0].id)
-        console.log("result password : ", results[0].password);
         bcrypt.compare(req.body.password, results[0].password)
           .then(valid => {
             if (!valid) {
@@ -79,8 +75,10 @@ exports.login = (req, res) => {
               token: jwt.sign(
                 { userId: results[0].id },
                 process.env.TOKEN,
-                { expiresIn: 30 }
-              )
+                { expiresIn: "24h" }
+              ),
+              nom: results[0].nom,
+              prenom: results[0].prenom
             });
           })
           .catch(error => res.status(500).json({ error }));
