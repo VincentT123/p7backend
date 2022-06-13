@@ -22,5 +22,4 @@ router.post('/createpost', auth, postsCtrl.createPost);
 router.put('/updatepost', auth, postsCtrl.updatePost);
 router.delete('/deletepost', auth, postsCtrl.deletePost);
 
-
 module.exports = router;

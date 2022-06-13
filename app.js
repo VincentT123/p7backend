@@ -5,8 +5,8 @@ const express = require('express');
 const path = require('path');
 
 const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/user');
 const postsRoutes = require('./routes/posts');
+const commentsRoutes = require('./routes/comments');
 
 // package permettant de sécuriser des données en les déportant vers le fichier .env
 require('dotenv').config()
@@ -27,7 +27,7 @@ app.use((req, res, next) => {
 // routes utilisées pour les demandes envoyées depuis le frontend avec un dossier statique pour les images
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/groupomania/auth', authRoutes);
-app.use('/groupomania/user', userRoutes);
 app.use('/groupomania/posts', postsRoutes);
+app.use('/groupomania/comments', commentsRoutes);
 
 module.exports = app;
