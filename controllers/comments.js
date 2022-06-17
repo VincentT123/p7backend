@@ -65,3 +65,174 @@ exports.updateComment = (req, res, next) => {
       })
     })
 };
+
+exports.getUserLikes = (req, res, next) => {
+  const request = 'SELECT comment_id, action FROM comments_likes WHERE user_id = ?';
+  const values = [req.body.id];
+  console.log("id : ", req.body.id);
+  db.query(
+    request, values,
+    function (err, results) {
+      if (err) throw err;
+      console.log("results : ", results)
+      res.json({
+        results,
+        status: 200,
+        message: "liste des likes comments transmise avec succès"
+      })
+    })
+};
+
+exports.likeComment = (req, res, next) => {
+  const request = 'SELECT * FROM comments_likes WHERE comment_id = ? AND user_id = ?';
+  const values = [req.body.cid, req.body.uid];
+  db.query(
+    request, values,
+    function (err, results) {
+      if (err) throw err;
+      console.log("back act : ", req.body.act)
+      switch (req.body.act) {
+        case 1:
+          if (results[0] === undefined) {
+            const request = 'INSERT INTO comments_likes VALUES (?,?,1)';
+            const values = [req.body.cid, req.body.uid];
+            db.query(
+              request, values,
+              function (err, results) {
+                if (err) throw err;
+                const request2 = 'UPDATE comments SET likes = likes + 1 WHERE id = ?';
+                const values2 = [req.body.cid];
+                db.query(
+                  request2, values2,
+                  function (err, results) {
+                    if (err) throw err;
+                    res.json({
+                      results,
+                      status: 200,
+                      message: "added like"
+                    })
+                  }
+                )
+
+              }
+            )
+          } else {
+            if (results[0].action === -1) {
+              const request = 'UPDATE comments_likes SET action = 1 WHERE comment_id = ? AND user_id = ?';
+              const values = [req.body.cid, req.body.uid];
+              db.query(
+                request, values,
+                function (err, results) {
+                  if (err) throw err;
+                  const request2 = 'UPDATE comments SET likes = likes + 1, dislikes = dislikes - 1 WHERE id = ?';
+                  const values2 = [req.body.cid];
+                  db.query(
+                    request2, values2,
+                    function (err, results) {
+                      if (err) throw err;
+                      res.json({
+                        results,
+                        status: 200,
+                        message: "dislike -> like"
+                      })
+                    }
+                  )
+
+                }
+              )
+            }
+          }
+          break
+        case -1:
+          if (results[0] === undefined) {
+            const request = 'INSERT INTO comments_likes VALUES (?,?,-1)';
+            const values = [req.body.cid, req.body.uid];
+            db.query(
+              request, values,
+              function (err, results) {
+                if (err) throw err;
+                const request2 = 'UPDATE comments SET dislikes = dislikes + 1 WHERE id = ?';
+                const values2 = [req.body.cid];
+                db.query(
+                  request2, values2,
+                  function (err, results) {
+                    if (err) throw err;
+                    res.json({
+                      results,
+                      status: 200,
+                      message: "added dislike"
+                    })
+                  }
+                )
+              }
+            )
+          } else {
+            if (results[0].action === 1) {
+              const request = 'UPDATE comments_likes SET action = -1 WHERE comment_id = ? AND user_id = ?';
+              const values = [req.body.cid, req.body.uid];
+              db.query(
+                request, values,
+                function (err, results) {
+                  if (err) throw err;
+                  const request2 = 'UPDATE comments SET likes = likes - 1, dislikes = dislikes + 1 WHERE id = ?';
+                  const values2 = [req.body.cid];
+                  db.query(
+                    request2, values2,
+                    function (err, results) {
+                      if (err) throw err;
+                      res.json({
+                        results,
+                        status: 200,
+                        message: "like -> dislike"
+                      })
+                    }
+                  )
+                }
+              )
+            }
+          }
+          break
+        case 0:
+          if (results[0] !== undefined) {
+            const request = 'DELETE FROM comments_likes WHERE comment_id = ? AND user_id = ?';
+            const values = [req.body.cid, req.body.uid];
+            let column = "likes"
+            if (results[0].action === -1) { column = "dislikes" };
+            console.log("results[0].action : ", results[0].action);
+            console.log("column : ", column);
+            db.query(
+              request, values,
+              function (err, results) {
+                if (err) throw err;
+                const request2 = 'UPDATE comments SET ' + column + ' = ' + column + ' - 1 WHERE id = ?';
+                const values2 = [req.body.cid];
+                console.log("back request 2 : ", request2);
+                db.query(
+                  request2, values2,
+                  function (err, results) {
+                    if (err) throw err;
+                    res.json({
+                      results,
+                      status: 200,
+                      message: "like/dislike deleted"
+                    })
+                  }
+                )
+              }
+            )
+          }
+          break
+        default:
+          res.json({
+            results,
+            status: 400,
+            message: "wrong like action value"
+          })
+      }
+      /*res.json({
+          results,
+          status: 200,
+          message: "like traité"
+      })*/
+    })
+};

@@ -8,6 +8,8 @@ const auth = require('../middleware/auth');
 
 const commentsCtrl = require('../controllers/comments');
 
+router.post('/like', auth, commentsCtrl.likeComment);
+router.post('/userlikes', auth, commentsCtrl.getUserLikes);
 router.post('/listcomments', auth, commentsCtrl.getAllComments);
 router.post('/createcomment', auth, commentsCtrl.createComment);
 router.put('/updatecomment', auth, commentsCtrl.updateComment);
