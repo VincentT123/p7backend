@@ -28,11 +28,21 @@ exports.createComment = (req, res, next) => {
     request, values,
     function (err, results) {
       if (err) throw err;
-      res.json({
-        results,
-        status: 200,
-        message: "comment créé avec succès"
-      })
+      console.log("results create comment : ", results);
+      const insertedId = results.insertId;
+      console.log("insertedId : ", insertedId);
+      const request2 = 'UPDATE posts SET comments = comments + 1 WHERE id = ?';
+      const values2 = [req.body.post_id];
+      db.query(
+        request2, values2,
+        function (err, results) {
+          if (err) throw err;
+          res.json({
+            id: insertedId,
+            status: 200,
+            message: "comment créé avec succès"
+          })
+        })
     })
 };
 
@@ -43,11 +53,19 @@ exports.deleteComment = (req, res, next) => {
     request, values,
     function (err, results) {
       if (err) throw err;
-      res.json({
-        results,
-        status: 200,
-        message: "comment supprimé avec succès"
-      })
+      const request2 = 'UPDATE posts SET comments = comments - 1 WHERE id = ?';
+      const values2 = [req.body.post_id];
+      console.log("results deleteComment : ", results)
+      db.query(
+        request2, values2,
+        function (err, results) {
+          if (err) throw err;
+          res.json({
+            results,
+            status: 200,
+            message: "comment supprimé avec succès"
+          })
+        })
     })
 };
 
