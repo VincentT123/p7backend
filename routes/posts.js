@@ -18,7 +18,7 @@ router.get('/', auth, postsCtrl.getAllPosts);*/
 router.post('/like', auth, postsCtrl.likePost);
 router.post('/userlikes', auth, postsCtrl.getUserLikes);
 router.get('/listposts', auth, postsCtrl.getAllPosts);
-router.post('/createpost', auth, postsCtrl.createPost);
+router.post('/createpost', auth, multer, postsCtrl.createPost);
 router.put('/updatepost', auth, postsCtrl.updatePost);
 router.delete('/deletepost', auth, postsCtrl.deletePost);
 

@@ -19,8 +19,15 @@ exports.getAllPosts = (req, res, next) => {
 };
 
 exports.createPost = (req, res, next) => {
-    const request = 'INSERT INTO posts (date_cre, texte, user_id, user_name) VALUES (CURRENT_TIMESTAMP() ,?,?,?)';
-    const values = [req.body.texte, req.body.user_id, req.body.user_name];
+
+    const data = JSON.parse(req.body.message);
+    console.log("data : ", data);
+    const imageUrl = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
+    console.log("imageUrl : ", imageUrl);
+    //const request = 'INSERT INTO posts (date_cre, texte, user_id, user_name) VALUES (CURRENT_TIMESTAMP() ,?,?,?)';
+    //const values = [req.body.texte, req.body.user_id, req.body.user_name];
+    const request = 'INSERT INTO posts (date_cre, texte, user_id, user_name, url_media) VALUES (CURRENT_TIMESTAMP() ,?,?,?,?)';
+    const values = [data.texte, data.user_id, data.user_name, imageUrl];
     db.query(
         request, values,
         function (err, results) {
