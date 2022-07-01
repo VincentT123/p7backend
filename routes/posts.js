@@ -19,7 +19,7 @@ router.post('/like', auth, postsCtrl.likePost);
 router.post('/userlikes', auth, postsCtrl.getUserLikes);
 router.get('/listposts', auth, postsCtrl.getAllPosts);
 router.post('/createpost', auth, multer, postsCtrl.createPost);
-router.put('/updatepost', auth, postsCtrl.updatePost);
+router.put('/updatepost', auth, multer, postsCtrl.updatePost);
 router.delete('/deletepost', auth, postsCtrl.deletePost);
 
 module.exports = router;

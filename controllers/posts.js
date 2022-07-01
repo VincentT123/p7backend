@@ -19,13 +19,8 @@ exports.getAllPosts = (req, res, next) => {
 };
 
 exports.createPost = (req, res, next) => {
-
     const data = JSON.parse(req.body.message);
-    console.log("data : ", data);
-    const imageUrl = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
-    console.log("imageUrl : ", imageUrl);
-    //const request = 'INSERT INTO posts (date_cre, texte, user_id, user_name) VALUES (CURRENT_TIMESTAMP() ,?,?,?)';
-    //const values = [req.body.texte, req.body.user_id, req.body.user_name];
+    const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null;
     const request = 'INSERT INTO posts (date_cre, texte, user_id, user_name, url_media) VALUES (CURRENT_TIMESTAMP() ,?,?,?,?)';
     const values = [data.texte, data.user_id, data.user_name, imageUrl];
     db.query(
@@ -41,33 +36,89 @@ exports.createPost = (req, res, next) => {
 };
 
 exports.deletePost = (req, res, next) => {
-    const request = 'DELETE FROM posts WHERE id = ?';
+    const request = 'SELECT url_media FROM posts WHERE id = ?';
     const values = [req.body.id];
     db.query(
         request, values,
         function (err, results) {
             if (err) throw err;
-            res.json({
-                results,
-                status: 200,
-                message: "post supprimé avec succès"
-            })
+            if (results[0] != undefined) {
+                const request2 = 'DELETE FROM posts WHERE id = ?';
+                const values2 = [req.body.id];
+                const url2 = results[0].url_media;
+                console.log("delete url : ", url2);
+                db.query(
+                    request2, values2,
+                    function (err, results) {
+                        if (err) throw err;
+                        if (url2 != null) {
+                            const filename = url2.split('/images/')[1];
+                            console.log("filename delete : ", filename)
+                            fs.unlink(`images/${filename}`, (err) => {
+                                if (err) throw err;
+                                console.log("image supprimée avec succès")
+                            })
+                        }
+                        res.json({
+                            results,
+                            status: 200,
+                            message: "post supprimé avec succès"
+                        })
+                    }
+                )
+            }
         })
 };
 
 exports.updatePost = (req, res, next) => {
-    const request = 'UPDATE posts SET texte = ? WHERE id = ?';
-    const values = [req.body.texte, req.body.id];
-    db.query(
-        request, values,
-        function (err, results) {
-            if (err) throw err;
-            res.json({
-                results,
-                status: 200,
-                message: "post modifié avec succès"
+    const data = JSON.parse(req.body.message);
+    const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null;
+    if (imageUrl === null && data.supprImg === false) {
+        const request = 'UPDATE posts SET texte = ? WHERE id = ?';
+        const values = [data.texte, data.id];
+        db.query(
+            request, values,
+            function (err, results) {
+                if (err) throw err;
+                res.json({
+                    results,
+                    status: 200,
+                    message: "post modifié avec succès"
+                })
             })
-        })
+    } else {
+        const request = 'SELECT url_media FROM posts WHERE id = ?';
+        const values = [data.id];
+        db.query(
+            request, values,
+            function (err, results) {
+                if (err) throw err;
+                if (results[0] != undefined) {
+                    const request2 = 'UPDATE posts SET texte = ?, url_media = ? WHERE id = ?';
+                    const values2 = [data.texte, imageUrl, data.id];
+                    const url2 = results[0].url_media;
+                    db.query(
+                        request2, values2,
+                        function (err, results) {
+                            if (err) throw err;
+                            if (url2 != null) {
+                                const filename = url2.split('/images/')[1];
+                                fs.unlink(`images/${filename}`, (err) => {
+                                    if (err) throw err;
+                                    console.log("image supprimée avec succès")
+                                })
+                            }
+                            res.json({
+                                imageUrl,
+                                status: 200,
+                                message: "post modifié avec succès"
+                            })
+                        }
+                    )
+
+                }
+            })
+    }
 };
 
 exports.getUserLikes = (req, res, next) => {

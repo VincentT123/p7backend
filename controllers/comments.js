@@ -70,18 +70,53 @@ exports.deleteComment = (req, res, next) => {
 };
 
 exports.updateComment = (req, res, next) => {
-  const request = 'UPDATE comments SET texte = ? WHERE id = ?';
-  const values = [req.body.texte, req.body.id];
-  db.query(
-    request, values,
-    function (err, results) {
-      if (err) throw err;
-      res.json({
-        results,
-        status: 200,
-        message: "comment modifié avec succès"
+  const data = JSON.parse(req.body.message);
+  const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null;
+  if (imageUrl === null && data.supprImg === false) {
+    const request = 'UPDATE comments SET texte = ? WHERE id = ?';
+    const values = [data.texte, data.id];
+    db.query(
+      request, values,
+      function (err, results) {
+        if (err) throw err;
+        res.json({
+          results,
+          status: 200,
+          message: "comment modifié avec succès"
+        })
       })
-    })
+  } else {
+    const request = 'SELECT url_media FROM comments WHERE id = ?';
+    const values = [data.id];
+    db.query(
+      request, values,
+      function (err, results) {
+        if (err) throw err;
+        if (results[0] != undefined) {
+          const request2 = 'UPDATE comments SET texte = ?, url_media = ? WHERE id = ?';
+          const values2 = [data.texte, imageUrl, data.id];
+          const url2 = results[0].url_media;
+          db.query(
+            request2, values2,
+            function (err, results) {
+              if (err) throw err;
+              if (url2 != null) {
+                const filename = url2.split('/images/')[1];
+                fs.unlink(`images/${filename}`, (err) => {
+                  if (err) throw err;
+                  console.log("image supprimée avec succès")
+                })
+              }
+              res.json({
+                imageUrl,
+                status: 200,
+                message: "comment modifié avec succès"
+              })
+            }
+          )
+        }
+      })
+  }
 };
 
 exports.getUserLikes = (req, res, next) => {
