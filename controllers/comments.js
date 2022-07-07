@@ -22,17 +22,17 @@ exports.getAllComments = (req, res, next) => {
 };
 
 exports.createComment = (req, res, next) => {
-  const request = 'INSERT INTO comments (date_cre, texte, post_id, user_id, user_name) VALUES (CURRENT_TIMESTAMP(),?,?,?,?)';
-  const values = [req.body.texte, req.body.post_id, req.body.user_id, req.body.user_name];
+  const data = JSON.parse(req.body.message);
+  const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null;
+  const request = 'INSERT INTO comments (date_cre, texte, post_id, user_id, user_name, url_media) VALUES (CURRENT_TIMESTAMP(),?,?,?,?,?)';
+  const values = [data.texte, data.post_id, data.user_id, data.user_name, imageUrl];
   db.query(
     request, values,
     function (err, results) {
       if (err) throw err;
-      console.log("results create comment : ", results);
       const insertedId = results.insertId;
-      console.log("insertedId : ", insertedId);
       const request2 = 'UPDATE posts SET comments = comments + 1 WHERE id = ?';
-      const values2 = [req.body.post_id];
+      const values2 = [data.post_id];
       db.query(
         request2, values2,
         function (err, results) {
@@ -47,25 +47,43 @@ exports.createComment = (req, res, next) => {
 };
 
 exports.deleteComment = (req, res, next) => {
-  const request = 'DELETE FROM comments WHERE id = ?';
+  const request = 'SELECT url_media FROM comments WHERE id = ?';
   const values = [req.body.id];
   db.query(
     request, values,
     function (err, results) {
       if (err) throw err;
-      const request2 = 'UPDATE posts SET comments = comments - 1 WHERE id = ?';
-      const values2 = [req.body.post_id];
-      console.log("results deleteComment : ", results)
-      db.query(
-        request2, values2,
-        function (err, results) {
-          if (err) throw err;
-          res.json({
-            results,
-            status: 200,
-            message: "comment supprimé avec succès"
+      if (results[0] != undefined) {
+        const request2 = 'DELETE FROM comments WHERE id = ?';
+        const values2 = [req.body.id];
+        const url2 = results[0].url_media;
+        db.query(
+          request2, values2,
+          function (err, results) {
+            if (err) throw err;
+            const request3 = 'UPDATE posts SET comments = comments - 1 WHERE id = ?';
+            const values3 = [req.body.post_id];
+            console.log("results deleteComment : ", results)
+            db.query(
+              request3, values3,
+              function (err, results) {
+                if (err) throw err;
+                if (url2 != null) {
+                  const filename = url2.split('/images/')[1];
+                  console.log("filename delete : ", filename)
+                  fs.unlink(`images/${filename}`, (err) => {
+                    if (err) throw err;
+                    console.log("image supprimée avec succès")
+                  })
+                }
+                res.json({
+                  results,
+                  status: 200,
+                  message: "comment supprimé avec succès"
+                })
+              })
           })
-        })
+      }
     })
 };
 
