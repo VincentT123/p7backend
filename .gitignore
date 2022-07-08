@@ -3,4 +3,3 @@ images/*.jpg
 images/*.png
 images/*.gif
 .env
-config
