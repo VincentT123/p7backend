@@ -60,15 +60,25 @@ exports.login = (req, res) => {
       if (err) throw err;
       if (results[0] === undefined) {
         res.json({
-          results,
           status: 404,
-          message: "email inconnu !"
+          errors: {
+            email: "Email inconnu",
+            password: ""
+          }
         })
       } else {
         bcrypt.compare(req.body.password, results[0].password)
           .then(valid => {
             if (!valid) {
-              return res.status(401).json({ error: 'Mot de passe incorrect !' });
+              //return res.status(401).json({ error: 'Mot de passe incorrect !' });
+              res.json({
+                status: 401,
+                errors: {
+                  email: "",
+                  password: "Mot de passe incorrect"
+                }
+              })
+              return
             }
             res.status(200).json({
               userId: results[0].id,
