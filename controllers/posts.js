@@ -4,6 +4,7 @@ const db = require('../db/db-groupomania');
 // filesystem package
 const fs = require('fs');
 
+// récupère la liste des posts
 exports.getAllPosts = (req, res, next) => {
     const request = 'SELECT * FROM posts ORDER BY date_cre DESC';
     db.query(
@@ -18,6 +19,7 @@ exports.getAllPosts = (req, res, next) => {
         })
 };
 
+// création d'un post avec si nécessaire l'adresse url de l'image associée
 exports.createPost = (req, res, next) => {
     const data = JSON.parse(req.body.message);
     const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null;
@@ -35,6 +37,7 @@ exports.createPost = (req, res, next) => {
         })
 };
 
+// suppression d'un post et suppression de l'image associée si elle existe
 exports.deletePost = (req, res, next) => {
     const request = 'SELECT url_media FROM posts WHERE id = ?';
     const values = [req.body.id];
@@ -70,6 +73,8 @@ exports.deletePost = (req, res, next) => {
         })
 };
 
+// mise à jour d'un post en séparant le traitement selon la présence ou non d'une image
+// si l'image a été supprimée en front alors suppression de l'image du serveur
 exports.updatePost = (req, res, next) => {
     const data = JSON.parse(req.body.message);
     const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null;
@@ -121,6 +126,7 @@ exports.updatePost = (req, res, next) => {
     }
 };
 
+// liste tous les likes/dislikes d'un utilisateur sur les posts
 exports.getUserLikes = (req, res, next) => {
     const request = 'SELECT post_id, action FROM posts_likes WHERE user_id = ?';
     const values = [req.body.id];
@@ -138,6 +144,13 @@ exports.getUserLikes = (req, res, next) => {
         })
 };
 
+// traitement des likes/dislikes :
+// - si l'utilisateur like et qu'il n'a pas déjà liké alors création d'un like dans la table posts_likes et
+//   incrémentaion du compteur de like de la table 'posts', même principe pour un dislike
+// - si l'utilisateur like et qu'il avait disliké alors maj du like de la table posts_likes et
+//   incrémentation du compteur de like + décrémentation compteur dislike, même principe pour un dislike
+// - si l'utilisateur annule son like en cliquant à nouveau sur like alors suppression du like dans 'posts_likes'
+//   et décrémentation compteur like dans 'posts' 
 exports.likePost = (req, res, next) => {
     const request = 'SELECT * FROM posts_likes WHERE post_id = ? AND user_id = ?';
     const values = [req.body.pid, req.body.uid];
@@ -284,10 +297,5 @@ exports.likePost = (req, res, next) => {
                         message: "wrong like action value"
                     })
             }
-            /*res.json({
-                results,
-                status: 200,
-                message: "like traité"
-            })*/
         })
 };

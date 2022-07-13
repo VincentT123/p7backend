@@ -1,5 +1,5 @@
 // routeur express definissant les routes à suivre pour les requêtes d'inscription et de connexion
-// sur la table 'Users'
+// sur la table 'users'
 
 const express = require('express');
 const router = express.Router();

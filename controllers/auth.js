@@ -20,7 +20,7 @@ exports.signup = async (req, res) => {
         const prenom = req.body.prenom;
         const email = req.body.email;
         const password = hash;
-        const picture = req.body.picture;// construction en cours
+        const picture = req.body.picture;// construction en cours (avatar)
         const sql = "INSERT INTO users (nom, prenom, email, password, picture) VALUES " +
           "('" + nom + "', '" + prenom + "', '" + email + "', '" + password + "', '" + picture + "')";
         db.query(sql, (err, result) => {

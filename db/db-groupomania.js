@@ -2,6 +2,7 @@
 const mysql = require('mysql2');
 const dbConfig = require('../config/dbConfig.js');
 
+// les données de configuration de l'accès à la base Groupomania se trouvent dans le fichier config/dbConfig.js
 const db = mysql.createConnection({
     host: dbConfig.HOST,
     user: dbConfig.USER,
