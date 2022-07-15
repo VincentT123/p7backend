@@ -37,7 +37,8 @@ exports.createPost = (req, res, next) => {
         })
 };
 
-// suppression d'un post et suppression de l'image associée si elle existe
+// suppression du post et de l'image associée si elle existe + suppression des images des comments
+// associés supprimés automatiquement par 'on cascade'
 exports.deletePost = (req, res, next) => {
     const request = 'SELECT url_media FROM posts WHERE id = ?';
     const values = [req.body.id];
@@ -46,29 +47,47 @@ exports.deletePost = (req, res, next) => {
         function (err, results) {
             if (err) throw err;
             if (results[0] != undefined) {
-                const request2 = 'DELETE FROM posts WHERE id = ?';
+                const urlPost = results[0].url_media;
+                const request2 = 'SELECT url_media FROM comments WHERE post_id = ?';
                 const values2 = [req.body.id];
-                const url2 = results[0].url_media;
-                console.log("delete url : ", url2);
                 db.query(
                     request2, values2,
                     function (err, results) {
                         if (err) throw err;
-                        if (url2 != null) {
-                            const filename = url2.split('/images/')[1];
-                            console.log("filename delete : ", filename)
-                            fs.unlink(`images/${filename}`, (err) => {
-                                if (err) throw err;
-                                console.log("image supprimée avec succès")
+                        console.log("delete posts + comments : ", results);
+                        if (results != undefined) {
+                            results.forEach((result) => {
+                                const url = result.url_media;
+                                if (url != null) {
+                                    const filename = url.split('/images/')[1];
+                                    fs.unlink(`images/${filename}`, (err) => {
+                                        if (err) throw err;
+                                        console.log("image comment supprimée avec succès")
+                                    })
+                                }
                             })
                         }
-                        res.json({
-                            results,
-                            status: 200,
-                            message: "post supprimé avec succès"
-                        })
-                    }
-                )
+                        const request3 = 'DELETE FROM posts WHERE id = ?';
+                        const values3 = [req.body.id];
+                        db.query(
+                            request3, values3,
+                            function (err, results) {
+                                if (err) throw err;
+                                if (urlPost != null) {
+                                    const filename = urlPost.split('/images/')[1];
+                                    fs.unlink(`images/${filename}`, (err) => {
+                                        if (err) throw err;
+                                        console.log("image post supprimée avec succès")
+                                    })
+                                }
+                                res.json({
+                                    results,
+                                    status: 200,
+                                    message: "post supprimé avec succès"
+                                })
+                            }
+                        )
+                    })
             }
         })
 };
@@ -130,12 +149,10 @@ exports.updatePost = (req, res, next) => {
 exports.getUserLikes = (req, res, next) => {
     const request = 'SELECT post_id, action FROM posts_likes WHERE user_id = ?';
     const values = [req.body.id];
-    console.log("id : ", req.body.id);
     db.query(
         request, values,
         function (err, results) {
             if (err) throw err;
-            console.log("results : ", results)
             res.json({
                 results,
                 status: 200,
@@ -158,7 +175,6 @@ exports.likePost = (req, res, next) => {
         request, values,
         function (err, results) {
             if (err) throw err;
-            console.log("back act : ", req.body.act)
             switch (req.body.act) {
                 case 1:
                     if (results[0] === undefined) {
@@ -266,15 +282,12 @@ exports.likePost = (req, res, next) => {
                         const values = [req.body.pid, req.body.uid];
                         let column = "likes"
                         if (results[0].action === -1) { column = "dislikes" };
-                        console.log("results[0].action : ", results[0].action);
-                        console.log("column : ", column);
                         db.query(
                             request, values,
                             function (err, results) {
                                 if (err) throw err;
                                 const request2 = 'UPDATE posts SET ' + column + ' = ' + column + ' - 1 WHERE id = ?';
                                 const values2 = [req.body.pid];
-                                console.log("back request 2 : ", request2);
                                 db.query(
                                     request2, values2,
                                     function (err, results) {
