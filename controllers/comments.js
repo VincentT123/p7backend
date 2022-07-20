@@ -8,12 +8,10 @@ const fs = require('fs');
 exports.getAllComments = (req, res, next) => {
   const request = 'SELECT * FROM comments WHERE post_id = ? ORDER BY date_cre ASC';
   const values = [req.body.post_id];
-  console.log("back post_id : ", req.body.post_id);
   db.query(
     request, values,
     function (err, results) {
       if (err) throw err;
-      console.log("results : ", results)
       res.json({
         results,
         status: 200,
@@ -66,14 +64,12 @@ exports.deleteComment = (req, res, next) => {
             if (err) throw err;
             const request3 = 'UPDATE posts SET comments = comments - 1 WHERE id = ?';
             const values3 = [req.body.post_id];
-            console.log("results deleteComment : ", results)
             db.query(
               request3, values3,
               function (err, results) {
                 if (err) throw err;
                 if (url2 != null) {
                   const filename = url2.split('/images/')[1];
-                  console.log("filename delete : ", filename)
                   fs.unlink(`images/${filename}`, (err) => {
                     if (err) throw err;
                     console.log("image supprimée avec succès")
@@ -146,12 +142,10 @@ exports.updateComment = (req, res, next) => {
 exports.getUserLikes = (req, res, next) => {
   const request = 'SELECT comment_id, action FROM comments_likes WHERE user_id = ?';
   const values = [req.body.id];
-  console.log("id : ", req.body.id);
   db.query(
     request, values,
     function (err, results) {
       if (err) throw err;
-      console.log("results : ", results)
       res.json({
         results,
         status: 200,
@@ -174,7 +168,6 @@ exports.likeComment = (req, res, next) => {
     request, values,
     function (err, results) {
       if (err) throw err;
-      console.log("back act : ", req.body.act)
       switch (req.body.act) {
         case 1:
           if (results[0] === undefined) {
@@ -282,15 +275,12 @@ exports.likeComment = (req, res, next) => {
             const values = [req.body.cid, req.body.uid];
             let column = "likes"
             if (results[0].action === -1) { column = "dislikes" };
-            console.log("results[0].action : ", results[0].action);
-            console.log("column : ", column);
             db.query(
               request, values,
               function (err, results) {
                 if (err) throw err;
                 const request2 = 'UPDATE comments SET ' + column + ' = ' + column + ' - 1 WHERE id = ?';
                 const values2 = [req.body.cid];
-                console.log("back request 2 : ", request2);
                 db.query(
                   request2, values2,
                   function (err, results) {

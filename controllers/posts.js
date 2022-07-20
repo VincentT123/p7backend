@@ -54,7 +54,6 @@ exports.deletePost = (req, res, next) => {
                     request2, values2,
                     function (err, results) {
                         if (err) throw err;
-                        console.log("delete posts + comments : ", results);
                         if (results != undefined) {
                             results.forEach((result) => {
                                 const url = result.url_media;
