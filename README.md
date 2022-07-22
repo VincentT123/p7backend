@@ -13,3 +13,7 @@ Avant de lancer l'API, il convient de créer un sous-dossier 'images' à la raci
 Pour lancer l'API : avec la console de commande, dans le dossier créé précédemment, entrer 'node server'.
 
 Note : le fichier .env contient notamment les paramètres de port de l'API et de l'application, ainsi que le mot de passe nécessaire à l'accès à la base de données MySQL. Cette base de données doit être reconstruite à l'aide des fichiers dump fournis en supplément.
+
+Versions des logiciels utilisés :
+- GIT : 2.34.1.windows.1
+- node.js : v16.14.2
