@@ -1,6 +1,8 @@
 const http = require('http');
 const app = require('./app');
 
+console.log("test serverjs");
+
 const normalizePort = val => {
   const port = parseInt(val, 10);
 
