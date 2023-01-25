@@ -13,8 +13,6 @@ require('dotenv').config()
 
 const app = express();
 
-console.log("test appjs");
-
 // middleware permettant de gérer les requêtes du frontend en extrayant le corps JSON
 app.use(express.json());
 
