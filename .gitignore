@@ -1,5 +1,2 @@
 node_modules
-images/*.jpg
-images/*.png
-images/*.gif
 .env
